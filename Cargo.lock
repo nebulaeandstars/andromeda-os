@@ -9,6 +9,7 @@ dependencies = [
  "bootloader",
  "lazy_static",
  "spin 0.9.2",
+ "uart_16550",
  "volatile 0.2.7",
  "x86_64",
 ]
@@ -68,6 +69,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "511254be0c5bcf062b019a6c89c01a664aa359ded62f78aa72c6fc137c0590e5"
 dependencies = [
  "lock_api",
+]
+
+[[package]]
+name = "uart_16550"
+version = "0.2.15"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "65ad019480ef5ff8ffe66d6f6a259cd87cf317649481394981db1739d844f374"
+dependencies = [
+ "bitflags",
+ "x86_64",
 ]
 
 [[package]]
