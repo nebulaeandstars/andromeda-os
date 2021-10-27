@@ -7,9 +7,9 @@
 mod serial;
 mod vga;
 
-use vga::VGA_WRITER;
+use core::panic::PanicInfo;
 
-static HELLO: &[u8] = b"Hello, world!";
+use vga::VGA_WRITER;
 
 #[no_mangle]
 pub extern "C" fn _start() -> !
@@ -35,9 +35,8 @@ fn maths()
     println!("{} + {} = {}", a, b, a + b);
 }
 
-use core::panic::PanicInfo;
 
-/// This function is called on panic.
+#[cfg(not(test))]
 #[panic_handler]
 fn panic(info: &PanicInfo) -> !
 {
@@ -45,22 +44,53 @@ fn panic(info: &PanicInfo) -> !
     loop {}
 }
 
-#[cfg(test)]
-fn test_runner(tests: &[&dyn Fn()])
+pub trait Test
 {
-    serial_println!("\nRunning {} tests", tests.len());
+    fn run(&self) -> ();
+}
+
+impl<T> Test for T
+where
+    T: Fn(),
+{
+    fn run(&self)
+    {
+        serial_print!("{}...\t", core::any::type_name::<T>());
+        self();
+        serial_println!("[ok]");
+    }
+}
+
+#[cfg(test)]
+pub fn test_runner(tests: &[&dyn Test])
+{
+    serial_println!("Running {} tests", tests.len());
     for test in tests {
-        test();
+        test.run(); // new
     }
     exit_qemu(QemuExitCode::Success);
+}
+
+// our panic handler in test mode
+#[cfg(test)]
+#[panic_handler]
+fn panic(info: &PanicInfo) -> !
+{
+    serial_println!("[failed]\n");
+    serial_println!("Error: {}\n", info);
+    exit_qemu(QemuExitCode::Failed);
 }
 
 #[test_case]
 fn trivial_assertion()
 {
-    serial_print!("trivial assertion... ");
     assert_eq!(1, 1);
-    serial_println!("[ok]");
+}
+
+#[test_case]
+fn failing_test()
+{
+    assert_eq!(1, 0);
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -71,7 +101,7 @@ pub enum QemuExitCode
     Failed  = 0x11,
 }
 
-pub fn exit_qemu(exit_code: QemuExitCode)
+pub fn exit_qemu(exit_code: QemuExitCode) -> !
 {
     use x86_64::instructions::port::Port;
 
@@ -79,4 +109,6 @@ pub fn exit_qemu(exit_code: QemuExitCode)
         let mut port = Port::new(0xf4);
         port.write(exit_code as u32);
     }
+
+    loop {}
 }
