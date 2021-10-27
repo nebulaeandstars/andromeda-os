@@ -81,18 +81,6 @@ fn panic(info: &PanicInfo) -> !
     exit_qemu(QemuExitCode::Failed);
 }
 
-#[test_case]
-fn trivial_assertion()
-{
-    assert_eq!(1, 1);
-}
-
-#[test_case]
-fn failing_test()
-{
-    assert_eq!(1, 0);
-}
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(u32)]
 pub enum QemuExitCode
