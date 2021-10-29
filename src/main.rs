@@ -11,7 +11,13 @@ use andromeda_os::println;
 #[no_mangle]
 pub extern "C" fn _start() -> !
 {
-    println!("Hello World{}", "!");
+    andromeda_os::init();
+
+    let a = 4;
+    let b = 17;
+
+    println!("Hello World!");
+    println!("{} + {} = {}", a, b, a + b);
 
     #[cfg(test)]
     test_main();

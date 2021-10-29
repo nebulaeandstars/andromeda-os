@@ -1,13 +1,31 @@
 #![no_std]
 #![cfg_attr(test, no_main)]
 #![feature(custom_test_frameworks)]
+#![feature(abi_x86_interrupt)]
 #![test_runner(crate::test_runner)]
 #![reexport_test_harness_main = "test_main"]
 
+pub mod interrupts;
 pub mod serial;
 pub mod vga;
 
 use core::panic::PanicInfo;
+
+pub fn init()
+{
+    // Load the Interrupt Descriptor Table.
+    interrupts::init_idt();
+}
+
+/// Entry point for tests
+#[cfg(test)]
+#[no_mangle]
+pub extern "C" fn _start() -> !
+{
+    init();
+    test_main();
+    loop {}
+}
 
 pub trait Test
 {
@@ -40,15 +58,6 @@ pub fn test_panic_handler(info: &PanicInfo) -> !
     serial_println!("[failed]\n");
     serial_println!("Error: {}\n", info);
     exit_qemu(QemuExitCode::Failed);
-}
-
-/// Entry point for `cargo test`
-#[cfg(test)]
-#[no_mangle]
-pub extern "C" fn _start() -> !
-{
-    test_main();
-    loop {}
 }
 
 #[cfg(test)]
