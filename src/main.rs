@@ -18,11 +18,6 @@ pub extern "C" fn _start() -> ! {
     println!("Hello World!");
     println!("{} + {} = {}", a, b, a + b);
 
-    // trigger a page fault
-    unsafe {
-        *(0xdeadbeef as *mut u64) = 42;
-    };
-
     #[cfg(test)]
     test_main();
 
