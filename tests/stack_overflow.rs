@@ -4,7 +4,7 @@
 
 use core::panic::PanicInfo;
 
-use andromeda_os::{exit_qemu, serial_println, QemuExitCode};
+use andromeda_os::{exit_qemu, halt, serial_println, QemuExitCode};
 use lazy_static::lazy_static;
 use x86_64::structures::idt::{InterruptDescriptorTable, InterruptStackFrame};
 

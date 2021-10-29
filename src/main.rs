@@ -6,10 +6,14 @@
 
 use core::panic::PanicInfo;
 
-use andromeda_os::{halt, println};
+use andromeda_os::vga::Color::*;
+use andromeda_os::vga::VGA_WRITER;
+use andromeda_os::{halt, println, vga};
 
 fn main() {
-    println!("Hello, world!");
+    vga::with_color(LightCyan, Black, || {
+        println!("Hello, world!");
+    });
 }
 
 #[no_mangle]

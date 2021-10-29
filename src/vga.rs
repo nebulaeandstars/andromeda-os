@@ -87,6 +87,18 @@ impl VGAWriter {
     }
 }
 
+pub fn with_color(fg: Color, bg: Color, task: fn()) {
+    let mut writer = VGA_WRITER.lock();
+    let old_color_code = writer.color_code;
+    writer.color_code = ColorCode::new(fg, bg);
+    drop(writer);
+
+    task();
+
+    let mut writer = VGA_WRITER.lock();
+    writer.color_code = old_color_code;
+}
+
 impl Default for VGAWriter {
     fn default() -> Self {
         Self {
