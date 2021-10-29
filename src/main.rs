@@ -2,26 +2,26 @@
 #![no_main]
 #![feature(custom_test_frameworks)]
 #![test_runner(andromeda_os::test_runner)]
-#![reexport_test_harness_main = "test_main"]
+#![reexport_test_harness_main = "run_test"]
 
 use core::panic::PanicInfo;
 
-use andromeda_os::println;
+use andromeda_os::{halt, println};
+
+fn main() {
+    println!("Hello, world!");
+}
 
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
     andromeda_os::init();
 
-    let a = 4;
-    let b = 17;
-
-    println!("Hello World!");
-    println!("{} + {} = {}", a, b, a + b);
-
     #[cfg(test)]
-    test_main();
+    run_test();
+    #[cfg(not(test))]
+    main();
 
-    loop {}
+    halt()
 }
 
 /// This function is called on panic.
@@ -29,7 +29,7 @@ pub extern "C" fn _start() -> ! {
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
     println!("{}", info);
-    loop {}
+    halt()
 }
 
 #[cfg(test)]

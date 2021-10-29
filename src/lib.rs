@@ -3,7 +3,7 @@
 #![feature(custom_test_frameworks)]
 #![feature(abi_x86_interrupt)]
 #![test_runner(crate::test_runner)]
-#![reexport_test_harness_main = "test_main"]
+#![reexport_test_harness_main = "run_test"]
 
 pub mod gdt;
 pub mod interrupts;
@@ -13,9 +13,21 @@ pub mod vga;
 use core::panic::PanicInfo;
 
 pub fn init() {
-    // Load the Interrupt Descriptor Table.
     gdt::init();
+
+    // Load the Interrupt Descriptor Table.
     interrupts::init_idt();
+
+    // Enable the 8259 PICs
+    unsafe { interrupts::PICS.lock().initialize() };
+    x86_64::instructions::interrupts::enable();
+}
+
+/// Enter a low-power infinite loop.
+pub fn halt() -> ! {
+    loop {
+        x86_64::instructions::hlt();
+    }
 }
 
 /// Entry point for tests
@@ -23,8 +35,8 @@ pub fn init() {
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
     init();
-    test_main();
-    loop {}
+    run_test();
+    halt()
 }
 
 pub trait Test {
@@ -77,5 +89,5 @@ pub fn exit_qemu(exit_code: QemuExitCode) -> ! {
         port.write(exit_code as u32);
     }
 
-    loop {}
+    halt()
 }
