@@ -11,8 +11,7 @@ pub mod vga;
 
 use core::panic::PanicInfo;
 
-pub fn init()
-{
+pub fn init() {
     // Load the Interrupt Descriptor Table.
     interrupts::init_idt();
 }
@@ -20,15 +19,13 @@ pub fn init()
 /// Entry point for tests
 #[cfg(test)]
 #[no_mangle]
-pub extern "C" fn _start() -> !
-{
+pub extern "C" fn _start() -> ! {
     init();
     test_main();
     loop {}
 }
 
-pub trait Test
-{
+pub trait Test {
     fn run(&self) -> ();
 }
 
@@ -36,16 +33,14 @@ impl<T> Test for T
 where
     T: Fn(),
 {
-    fn run(&self)
-    {
+    fn run(&self) {
         serial_print!("{}...\t", core::any::type_name::<T>());
         self();
         serial_println!("[ok]");
     }
 }
 
-pub fn test_runner(tests: &[&dyn Test])
-{
+pub fn test_runner(tests: &[&dyn Test]) {
     serial_println!("Running {} tests", tests.len());
     for test in tests {
         test.run();
@@ -53,8 +48,7 @@ pub fn test_runner(tests: &[&dyn Test])
     exit_qemu(QemuExitCode::Success);
 }
 
-pub fn test_panic_handler(info: &PanicInfo) -> !
-{
+pub fn test_panic_handler(info: &PanicInfo) -> ! {
     serial_println!("[failed]\n");
     serial_println!("Error: {}\n", info);
     exit_qemu(QemuExitCode::Failed);
@@ -62,18 +56,18 @@ pub fn test_panic_handler(info: &PanicInfo) -> !
 
 #[cfg(test)]
 #[panic_handler]
-fn panic(info: &PanicInfo) -> ! { test_panic_handler(info) }
+fn panic(info: &PanicInfo) -> ! {
+    test_panic_handler(info)
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(u32)]
-pub enum QemuExitCode
-{
+pub enum QemuExitCode {
     Success = 0x10,
     Failed  = 0x11,
 }
 
-pub fn exit_qemu(exit_code: QemuExitCode) -> !
-{
+pub fn exit_qemu(exit_code: QemuExitCode) -> ! {
     use x86_64::instructions::port::Port;
 
     unsafe {

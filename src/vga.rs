@@ -12,17 +12,14 @@ lazy_static! {
         Mutex::new(VGAWriter::default());
 }
 
-pub struct VGAWriter
-{
+pub struct VGAWriter {
     column_position: usize,
     color_code:      ColorCode,
     buffer:          &'static mut Buffer,
 }
 
-impl VGAWriter
-{
-    pub fn write_byte(&mut self, byte: u8)
-    {
+impl VGAWriter {
+    pub fn write_byte(&mut self, byte: u8) {
         match byte {
             b'\n' => self.new_line(),
             byte => {
@@ -34,15 +31,16 @@ impl VGAWriter
                 let col = self.column_position;
                 let color_code = self.color_code;
 
-                self.buffer.chars[row][col]
-                    .write(VGAChar { ascii_character: byte, color_code });
+                self.buffer.chars[row][col].write(VGAChar {
+                    ascii_character: byte,
+                    color_code,
+                });
                 self.column_position += 1;
             },
         }
     }
 
-    pub fn write_str(&mut self, s: &str)
-    {
+    pub fn write_str(&mut self, s: &str) {
         for byte in s.bytes() {
             match byte {
                 // printable ASCII byte or newline
@@ -54,8 +52,7 @@ impl VGAWriter
         }
     }
 
-    fn new_line(&mut self)
-    {
+    fn new_line(&mut self) {
         for row in 1..BUFFER_HEIGHT {
             for col in 0..BUFFER_WIDTH {
                 let character = self.buffer.chars[row][col].read();
@@ -66,20 +63,19 @@ impl VGAWriter
         self.column_position = 0;
     }
 
-    fn clear_row(&mut self, row: usize)
-    {
-        let blank =
-            VGAChar { ascii_character: b' ', color_code: self.color_code };
+    fn clear_row(&mut self, row: usize) {
+        let blank = VGAChar {
+            ascii_character: b' ',
+            color_code:      self.color_code,
+        };
         for col in 0..BUFFER_WIDTH {
             self.buffer.chars[row][col].write(blank);
         }
     }
 }
 
-impl Default for VGAWriter
-{
-    fn default() -> Self
-    {
+impl Default for VGAWriter {
+    fn default() -> Self {
         Self {
             column_position: 0,
             color_code:      ColorCode::new(Color::White, Color::Black),
@@ -88,25 +84,21 @@ impl Default for VGAWriter
     }
 }
 
-impl fmt::Write for VGAWriter
-{
-    fn write_str(&mut self, s: &str) -> fmt::Result
-    {
+impl fmt::Write for VGAWriter {
+    fn write_str(&mut self, s: &str) -> fmt::Result {
         self.write_str(s);
         Ok(())
     }
 }
 
 #[repr(transparent)]
-struct Buffer
-{
+struct Buffer {
     chars: [[Volatile<VGAChar>; BUFFER_WIDTH]; BUFFER_HEIGHT],
 }
 
 #[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-struct VGAChar
-{
+struct VGAChar {
     ascii_character: u8,
     color_code:      ColorCode,
 }
@@ -115,10 +107,8 @@ struct VGAChar
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 struct ColorCode(u8);
 
-impl ColorCode
-{
-    fn new(foreground: Color, background: Color) -> ColorCode
-    {
+impl ColorCode {
+    fn new(foreground: Color, background: Color) -> ColorCode {
         ColorCode((background as u8) << 4 | (foreground as u8))
     }
 }
@@ -126,8 +116,7 @@ impl ColorCode
 #[repr(u8)]
 #[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Color
-{
+pub enum Color {
     Black      = 0,
     Blue       = 1,
     Green      = 2,
@@ -158,29 +147,25 @@ macro_rules! println {
 }
 
 #[doc(hidden)]
-pub fn _print(args: fmt::Arguments)
-{
+pub fn _print(args: fmt::Arguments) {
     use core::fmt::Write;
     VGA_WRITER.lock().write_fmt(args).unwrap();
 }
 
 #[test_case]
-fn test_println()
-{
+fn test_println() {
     println!("test_println_simple output");
 }
 
 #[test_case]
-fn test_println_many()
-{
+fn test_println_many() {
     for _ in 0..200 {
         println!("test_println_many output");
     }
 }
 
 #[test_case]
-fn test_println_output()
-{
+fn test_println_output() {
     let s = "Some test string that fits on a single line";
     println!("{}", s);
     for (i, c) in s.chars().enumerate() {

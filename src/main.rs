@@ -9,8 +9,7 @@ use core::panic::PanicInfo;
 use andromeda_os::println;
 
 #[no_mangle]
-pub extern "C" fn _start() -> !
-{
+pub extern "C" fn _start() -> ! {
     andromeda_os::init();
 
     let a = 4;
@@ -18,6 +17,11 @@ pub extern "C" fn _start() -> !
 
     println!("Hello World!");
     println!("{} + {} = {}", a, b, a + b);
+
+    // trigger a page fault
+    unsafe {
+        *(0xdeadbeef as *mut u64) = 42;
+    };
 
     #[cfg(test)]
     test_main();
@@ -28,12 +32,13 @@ pub extern "C" fn _start() -> !
 /// This function is called on panic.
 #[cfg(not(test))]
 #[panic_handler]
-fn panic(info: &PanicInfo) -> !
-{
+fn panic(info: &PanicInfo) -> ! {
     println!("{}", info);
     loop {}
 }
 
 #[cfg(test)]
 #[panic_handler]
-fn panic(info: &PanicInfo) -> ! { andromeda_os::test_panic_handler(info) }
+fn panic(info: &PanicInfo) -> ! {
+    andromeda_os::test_panic_handler(info)
+}
