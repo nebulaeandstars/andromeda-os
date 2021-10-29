@@ -64,6 +64,18 @@ impl VGAWriter {
         self.column_position = 0;
     }
 
+    fn delete(&mut self) {
+        let row = BUFFER_HEIGHT - 1;
+        let col = self.column_position;
+        let color_code = self.color_code;
+
+        self.buffer.chars[row][col - 1].write(VGAChar {
+            ascii_character: b' ',
+            color_code,
+        });
+        self.column_position -= 1;
+    }
+
     fn clear_row(&mut self, row: usize) {
         let blank = VGAChar {
             ascii_character: b' ',
