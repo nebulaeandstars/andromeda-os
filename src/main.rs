@@ -9,12 +9,22 @@ extern crate alloc;
 use core::panic::PanicInfo;
 
 use andromeda_os::memory::BootInfoFrameAllocator;
+use andromeda_os::task::SimpleExecutor;
 use andromeda_os::vga::Color::*;
 use andromeda_os::vga::VGA_WRITER;
 use andromeda_os::{halt, memory, print, println, vga};
 use bootloader::BootInfo;
 use x86_64::structures::paging::{OffsetPageTable, Page, Translate};
 use x86_64::VirtAddr;
+
+async fn async_number() -> u32 {
+    42
+}
+
+async fn example_task() {
+    let number = async_number().await;
+    println!("async number: {}", number);
+}
 
 fn main() {
     vga::with_color(LightCyan, Black, || {
@@ -25,6 +35,10 @@ fn main() {
     println!("{:?}", s);
     s.push_str(" It can be expanded.");
     println!("{:?}", s);
+
+    let mut executor = SimpleExecutor::new();
+    executor.spawn(example_task());
+    executor.run();
 }
 
 bootloader::entry_point!(kernel_start);
