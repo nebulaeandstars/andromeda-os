@@ -62,6 +62,12 @@ impl ScancodeStream {
     }
 }
 
+impl Default for ScancodeStream {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Stream for ScancodeStream {
     type Item = u8;
 
@@ -73,7 +79,7 @@ impl Stream for ScancodeStream {
             return Poll::Ready(Some(scancode));
         }
 
-        WAKER.register(&cx.waker());
+        WAKER.register(cx.waker());
         match queue.pop() {
             Some(scancode) => {
                 WAKER.take();

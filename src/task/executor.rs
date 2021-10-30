@@ -14,7 +14,9 @@ struct TaskWaker {
 }
 
 impl TaskWaker {
-    fn new(task_id: TaskId, task_queue: Arc<ArrayQueue<TaskId>>) -> Waker {
+    fn gen_waker(
+        task_id: TaskId, task_queue: Arc<ArrayQueue<TaskId>>,
+    ) -> Waker {
         Waker::from(Arc::new(TaskWaker { task_id, task_queue }))
     }
 
@@ -84,9 +86,9 @@ impl Executor {
                 Some(task) => task,
                 None => continue, // task no longer exists
             };
-            let waker = wakers
-                .entry(task_id)
-                .or_insert_with(|| TaskWaker::new(task_id, queue.clone()));
+            let waker = wakers.entry(task_id).or_insert_with(|| {
+                TaskWaker::gen_waker(task_id, queue.clone())
+            });
             let mut context = Context::from_waker(waker);
             match task.poll(&mut context) {
                 Poll::Pending => {},

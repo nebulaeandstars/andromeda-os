@@ -7,9 +7,9 @@ use x86_64::{PhysAddr, VirtAddr};
 
 /// Initialize a new OffsetPageTable.
 ///
-/// This function is unsafe because the caller must guarantee that the
-/// complete physical memory is mapped to virtual memory at the passed
-/// `physical_memory_offset`.
+/// # Safety
+/// Unsafe because the caller must guarantee that the complete physical memory
+/// is mapped to virtual memory at the passed `physical_memory_offset`.
 pub unsafe fn init(
     physical_memory_offset: VirtAddr,
 ) -> OffsetPageTable<'static> {
@@ -17,7 +17,7 @@ pub unsafe fn init(
 
     let start_address = table_frame.start_address();
     let virtual_address = physical_memory_offset + start_address.as_u64();
-    let level_4_table = unsafe { &mut *virtual_address.as_mut_ptr() };
+    let level_4_table = &mut *virtual_address.as_mut_ptr();
 
     OffsetPageTable::new(level_4_table, physical_memory_offset)
 }
@@ -53,9 +53,10 @@ pub struct BootInfoFrameAllocator {
 impl BootInfoFrameAllocator {
     /// Create a FrameAllocator from the passed memory map.
     ///
-    /// This function is unsafe because the caller must guarantee that the
-    /// passed memory map is valid. The main requirement is that all frames
-    /// that are marked as `USABLE` in it are really unused.
+    /// # Safety
+    /// Unsafe because the caller must guarantee that the passed memory map is
+    /// valid. The main requirement is that all frames that are marked as
+    /// `USABLE` in it are really unused.
     pub unsafe fn init(memory_map: &'static MemoryMap) -> Self {
         BootInfoFrameAllocator { memory_map, next_frame: 0 }
     }

@@ -37,8 +37,7 @@ unsafe impl GlobalAlloc for Locked<BumpAllocator> {
         let mut bump = self.lock();
 
         // Align the start address to match the given Layout.
-        let alloc_start =
-            unsafe { super::align_next_unsafe(bump.next, layout.align()) };
+        let alloc_start = super::align_next_unsafe(bump.next, layout.align());
 
         // Find the end of the memory region, checking for any overflows.
         let alloc_end = match alloc_start.checked_add(layout.size()) {

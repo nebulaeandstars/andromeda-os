@@ -3,7 +3,7 @@ use pic8259::ChainedPics;
 use spin;
 use x86_64::structures::idt;
 
-use crate::{gdt, halt, print, println};
+use crate::{gdt, halt, println};
 
 pub const PIC1_OFFSET: u8 = 32;
 pub const PIC2_OFFSET: u8 = PIC1_OFFSET + 8;

@@ -6,10 +6,10 @@
 
 use core::panic::PanicInfo;
 
-use andromeda_os::{halt, println, vga};
+use andromeda_os::{halt, println};
 
 bootloader::entry_point!(test_kernel_start);
-fn test_kernel_start(boot_info: &'static bootloader::BootInfo) -> ! {
+fn test_kernel_start(_boot_info: &'static bootloader::BootInfo) -> ! {
     run_test();
     halt()
 }

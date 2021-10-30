@@ -62,7 +62,7 @@ impl VGAWriter {
         self.column_position = 0;
     }
 
-    fn delete(&mut self) {
+    fn _delete(&mut self) {
         let row = BUFFER_HEIGHT - 1;
         let col = self.column_position;
         let color_code = self.color_code;

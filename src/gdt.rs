@@ -25,8 +25,7 @@ lazy_static! {
             static mut STACK: [u8; STACK_SIZE] = [0; STACK_SIZE];
 
             let stack_start = VirtAddr::from_ptr(unsafe { &STACK });
-            let stack_end = stack_start + STACK_SIZE;
-            stack_end
+            stack_start + STACK_SIZE
         };
 
         tss
@@ -39,12 +38,12 @@ struct Selectors {
 }
 
 pub fn init() {
-    use x86_64::instructions::segmentation::set_cs;
     use x86_64::instructions::tables::load_tss;
+    use x86_64::registers::segmentation::{Segment, CS};
 
     GDT.0.load();
     unsafe {
-        set_cs(GDT.1.code_selector);
+        CS::set_reg(GDT.1.code_selector);
         load_tss(GDT.1.tss_selector);
     }
 }

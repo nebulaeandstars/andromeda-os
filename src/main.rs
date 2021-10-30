@@ -8,23 +8,10 @@ extern crate alloc;
 
 use core::panic::PanicInfo;
 
-use andromeda_os::memory::BootInfoFrameAllocator;
 use andromeda_os::task::{keyboard, Executor};
 use andromeda_os::vga::Color::*;
-use andromeda_os::vga::VGA_WRITER;
-use andromeda_os::{halt, memory, print, println, vga};
+use andromeda_os::{halt, println, vga};
 use bootloader::BootInfo;
-use x86_64::structures::paging::{OffsetPageTable, Page, Translate};
-use x86_64::VirtAddr;
-
-async fn async_number() -> u32 {
-    42
-}
-
-async fn example_task() {
-    let number = async_number().await;
-    println!("async number: {}", number);
-}
 
 fn main() {
     vga::with_color(LightCyan, Black, || {
@@ -37,20 +24,18 @@ fn main() {
     println!("{:?}", s);
 
     let mut executor = Executor::new(100);
-    executor.spawn(example_task());
     executor.spawn(keyboard::print_keypresses());
     executor.run()
 }
 
 bootloader::entry_point!(kernel_start);
 fn kernel_start(boot_info: &'static BootInfo) -> ! {
-    let (mem_map, frame_allocator) = andromeda_os::init(&boot_info);
+    andromeda_os::init(boot_info);
 
     #[cfg(test)]
     run_test();
-    #[cfg(not(test))]
-    main();
 
+    main();
     halt()
 }
 

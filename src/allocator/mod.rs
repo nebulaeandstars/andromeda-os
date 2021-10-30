@@ -60,9 +60,6 @@ unsafe fn align_next_unsafe(addr: usize, align: usize) -> usize {
     (addr + align - 1) & !(align - 1)
 }
 
-use bump::BumpAllocator;
-use linked_list_allocator::LockedHeap;
-use linkedlist::LinkedListAllocator;
 use pool::PoolAllocator;
 
 #[global_allocator]

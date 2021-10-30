@@ -54,19 +54,19 @@ pub fn halt() -> ! {
     }
 }
 
-/// Entry point for tests
 #[cfg(test)]
 bootloader::entry_point!(test_kernel_start);
 
 #[cfg(test)]
+/// Entry point for tests
 fn test_kernel_start(boot_info: &'static bootloader::BootInfo) -> ! {
-    init(&boot_info);
+    init(boot_info);
     run_test();
     halt()
 }
 
 pub trait Test {
-    fn run(&self) -> ();
+    fn run(&self);
 }
 
 impl<T> Test for T
