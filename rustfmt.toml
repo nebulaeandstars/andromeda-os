@@ -12,6 +12,7 @@ imports_granularity = "Module"
 group_imports = "StdExternalCrate"
 
 fn_args_layout = "Compressed"
+use_small_heuristics = "Max"
 
 use_field_init_shorthand = true
 

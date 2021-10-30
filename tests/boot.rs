@@ -8,8 +8,8 @@ use core::panic::PanicInfo;
 
 use andromeda_os::{halt, println, vga};
 
-#[no_mangle]
-pub extern "C" fn _start() -> ! {
+bootloader::entry_point!(test_kernel_start);
+fn test_kernel_start(boot_info: &'static bootloader::BootInfo) -> ! {
     run_test();
     halt()
 }

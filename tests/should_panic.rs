@@ -7,8 +7,8 @@ use andromeda_os::{
     exit_qemu, halt, serial_print, serial_println, QemuExitCode,
 };
 
-#[no_mangle]
-pub extern "C" fn _start() -> ! {
+bootloader::entry_point!(test_kernel_start);
+fn test_kernel_start(boot_info: &'static bootloader::BootInfo) -> ! {
     should_fail();
     serial_println!("[test did not panic]");
     exit_qemu(QemuExitCode::Failed);

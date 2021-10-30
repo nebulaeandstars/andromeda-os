@@ -39,8 +39,8 @@ fn stack_overflow() {
     volatile::Volatile::new(0).read(); // prevent tail recursion optimizations
 }
 
-#[no_mangle]
-pub extern "C" fn _start() -> ! {
+bootloader::entry_point!(test_kernel_start);
+fn test_kernel_start(boot_info: &'static bootloader::BootInfo) -> ! {
     serial_println!("stack_overflow::stack_overflow...\t");
 
     andromeda_os::gdt::init();

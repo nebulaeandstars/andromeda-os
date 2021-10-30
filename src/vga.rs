@@ -32,10 +32,8 @@ impl VGAWriter {
                 let col = self.column_position;
                 let color_code = self.color_code;
 
-                self.buffer.chars[row][col].write(VGAChar {
-                    ascii_character: byte,
-                    color_code,
-                });
+                self.buffer.chars[row][col]
+                    .write(VGAChar { ascii_character: byte, color_code });
                 self.column_position += 1;
             },
         }
@@ -69,25 +67,21 @@ impl VGAWriter {
         let col = self.column_position;
         let color_code = self.color_code;
 
-        self.buffer.chars[row][col - 1].write(VGAChar {
-            ascii_character: b' ',
-            color_code,
-        });
+        self.buffer.chars[row][col - 1]
+            .write(VGAChar { ascii_character: b' ', color_code });
         self.column_position -= 1;
     }
 
     fn clear_row(&mut self, row: usize) {
-        let blank = VGAChar {
-            ascii_character: b' ',
-            color_code:      self.color_code,
-        };
+        let blank =
+            VGAChar { ascii_character: b' ', color_code: self.color_code };
         for col in 0..BUFFER_WIDTH {
             self.buffer.chars[row][col].write(blank);
         }
     }
 }
 
-pub fn with_color(fg: Color, bg: Color, task: fn()) {
+pub fn with_color<F: Fn()>(fg: Color, bg: Color, task: F) {
     let mut writer = VGA_WRITER.lock();
     let old_color_code = writer.color_code;
     writer.color_code = ColorCode::new(fg, bg);

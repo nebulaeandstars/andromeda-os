@@ -7,6 +7,7 @@
 
 pub mod gdt;
 pub mod interrupts;
+pub mod memory;
 pub mod serial;
 pub mod vga;
 
@@ -32,8 +33,10 @@ pub fn halt() -> ! {
 
 /// Entry point for tests
 #[cfg(test)]
-#[no_mangle]
-pub extern "C" fn _start() -> ! {
+bootloader::entry_point!(test_kernel_start);
+
+#[cfg(test)]
+fn test_kernel_start(boot_info: &'static bootloader::BootInfo) -> ! {
     init();
     run_test();
     halt()
