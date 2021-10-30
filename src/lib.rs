@@ -1,10 +1,14 @@
 #![no_std]
 #![cfg_attr(test, no_main)]
 #![feature(custom_test_frameworks)]
+#![feature(alloc_error_handler)]
 #![feature(abi_x86_interrupt)]
 #![test_runner(crate::test_runner)]
 #![reexport_test_harness_main = "run_test"]
 
+extern crate alloc;
+
+pub mod allocator;
 pub mod gdt;
 pub mod interrupts;
 pub mod memory;
@@ -13,7 +17,13 @@ pub mod vga;
 
 use core::panic::PanicInfo;
 
-pub fn init() {
+use x86_64::structures::paging::OffsetPageTable;
+
+pub fn init(
+    boot_info: &'static bootloader::BootInfo,
+) -> (OffsetPageTable, memory::BootInfoFrameAllocator) {
+    use x86_64::VirtAddr;
+
     gdt::init();
 
     // Load the Interrupt Descriptor Table.
@@ -22,6 +32,17 @@ pub fn init() {
     // Enable the 8259 PICs
     unsafe { interrupts::PICS.lock().initialize() };
     x86_64::instructions::interrupts::enable();
+
+    let phys_mem_offset = VirtAddr::new(boot_info.physical_memory_offset);
+    let mut mem_map = unsafe { memory::init(phys_mem_offset) };
+
+    let mut frame_allocator =
+        unsafe { memory::BootInfoFrameAllocator::init(&boot_info.memory_map) };
+
+    allocator::init_heap(&mut mem_map, &mut frame_allocator)
+        .expect("heap initialization failed");
+
+    (mem_map, frame_allocator)
 }
 
 /// Enter a low-power infinite loop.
@@ -37,7 +58,7 @@ bootloader::entry_point!(test_kernel_start);
 
 #[cfg(test)]
 fn test_kernel_start(boot_info: &'static bootloader::BootInfo) -> ! {
-    init();
+    init(&boot_info);
     run_test();
     halt()
 }

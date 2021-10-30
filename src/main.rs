@@ -4,6 +4,8 @@
 #![test_runner(andromeda_os::test_runner)]
 #![reexport_test_harness_main = "run_test"]
 
+extern crate alloc;
+
 use core::panic::PanicInfo;
 
 use andromeda_os::memory::BootInfoFrameAllocator;
@@ -21,24 +23,15 @@ fn main(
         println!("Hello, world!\n");
     });
 
-    // map an unused page
-    let page = Page::containing_address(VirtAddr::new(0xdeadbeaf000));
-    memory::create_example_mapping(page, &mut mem_map, &mut frame_allocator);
-
-    // write the string `New!` to the screen through the new mapping
-    let page_ptr: *mut u64 = page.start_address().as_mut_ptr();
-    unsafe { page_ptr.offset(400).write_volatile(0x_f021_f077_f065_f04e) };
+    let mut s = alloc::string::String::from("This is a String on the heap!");
+    println!("{:?}", s);
+    s.push_str(" It can be expanded.");
+    println!("{:?}", s);
 }
 
 bootloader::entry_point!(kernel_start);
 fn kernel_start(boot_info: &'static BootInfo) -> ! {
-    andromeda_os::init();
-
-    let phys_mem_offset = VirtAddr::new(boot_info.physical_memory_offset);
-    let mem_map = unsafe { memory::init(phys_mem_offset) };
-
-    let mut frame_allocator =
-        unsafe { BootInfoFrameAllocator::init(&boot_info.memory_map) };
+    let (mem_map, frame_allocator) = andromeda_os::init(&boot_info);
 
     #[cfg(test)]
     run_test();
