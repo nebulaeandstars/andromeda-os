@@ -1,5 +1,6 @@
-use alloc::alloc::{GlobalAlloc, Layout};
-use core::ptr;
+mod bump;
+mod linkedlist;
+mod pool;
 
 use x86_64::structures::paging::mapper::MapToError;
 use x86_64::structures::paging::{
@@ -37,10 +38,36 @@ pub fn init_heap(
     Ok(())
 }
 
+pub struct Locked<A> {
+    inner: spin::Mutex<A>,
+}
+
+impl<A> Locked<A> {
+    pub const fn new(inner: A) -> Self {
+        Locked { inner: spin::Mutex::new(inner) }
+    }
+
+    pub fn lock(&self) -> spin::MutexGuard<A> {
+        self.inner.lock()
+    }
+}
+
+
+/// Align the given address `addr` upwards to alignment `align`.
+///
+/// Unsafe as `align` must be a power of two.
+unsafe fn align_next_unsafe(addr: usize, align: usize) -> usize {
+    (addr + align - 1) & !(align - 1)
+}
+
+use bump::BumpAllocator;
 use linked_list_allocator::LockedHeap;
+use linkedlist::LinkedListAllocator;
+use pool::PoolAllocator;
 
 #[global_allocator]
-static ALLOCATOR: LockedHeap = LockedHeap::empty();
+static ALLOCATOR: Locked<LinkedListAllocator> =
+    Locked::new(LinkedListAllocator::new());
 
 #[alloc_error_handler]
 fn alloc_error_handler(layout: alloc::alloc::Layout) -> ! {
@@ -74,4 +101,14 @@ fn many_boxes() {
         let x = Box::new(i);
         assert_eq!(*x, i);
     }
+}
+
+#[test_case]
+fn many_boxes_long_lived() {
+    let value = Box::new(1);
+    for i in 0..HEAP_SIZE {
+        let x = Box::new(i);
+        assert_eq!(*x, i);
+    }
+    assert_eq!(*value, 1);
 }
