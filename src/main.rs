@@ -16,9 +16,7 @@ use bootloader::BootInfo;
 use x86_64::structures::paging::{OffsetPageTable, Page, Translate};
 use x86_64::VirtAddr;
 
-fn main(
-    mut mem_map: OffsetPageTable, mut frame_allocator: BootInfoFrameAllocator,
-) {
+fn main() {
     vga::with_color(LightCyan, Black, || {
         println!("Hello, world!\n");
     });
@@ -36,7 +34,7 @@ fn kernel_start(boot_info: &'static BootInfo) -> ! {
     #[cfg(test)]
     run_test();
     #[cfg(not(test))]
-    main(mem_map, frame_allocator);
+    main();
 
     halt()
 }

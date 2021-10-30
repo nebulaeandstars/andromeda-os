@@ -66,49 +66,9 @@ use linkedlist::LinkedListAllocator;
 use pool::PoolAllocator;
 
 #[global_allocator]
-static ALLOCATOR: Locked<LinkedListAllocator> =
-    Locked::new(LinkedListAllocator::new());
+static ALLOCATOR: Locked<PoolAllocator> = Locked::new(PoolAllocator::new());
 
 #[alloc_error_handler]
 fn alloc_error_handler(layout: alloc::alloc::Layout) -> ! {
     panic!("allocation error: {:?}", layout)
-}
-
-use alloc::boxed::Box;
-use alloc::vec::Vec;
-
-#[test_case]
-fn simple_allocation() {
-    let heap_value_1 = Box::new(41);
-    let heap_value_2 = Box::new(13);
-    assert_eq!(*heap_value_1, 41);
-    assert_eq!(*heap_value_2, 13);
-}
-
-#[test_case]
-fn large_vec() {
-    let n = 1000;
-    let mut vec = Vec::new();
-    for i in 0..n {
-        vec.push(i);
-    }
-    assert_eq!(vec.iter().sum::<u64>(), (n - 1) * n / 2);
-}
-
-#[test_case]
-fn many_boxes() {
-    for i in 0..HEAP_SIZE {
-        let x = Box::new(i);
-        assert_eq!(*x, i);
-    }
-}
-
-#[test_case]
-fn many_boxes_long_lived() {
-    let value = Box::new(1);
-    for i in 0..HEAP_SIZE {
-        let x = Box::new(i);
-        assert_eq!(*x, i);
-    }
-    assert_eq!(*value, 1);
 }
