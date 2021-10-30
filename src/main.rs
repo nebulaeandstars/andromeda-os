@@ -9,7 +9,7 @@ extern crate alloc;
 use core::panic::PanicInfo;
 
 use andromeda_os::memory::BootInfoFrameAllocator;
-use andromeda_os::task::{keyboard, SimpleExecutor};
+use andromeda_os::task::{keyboard, Executor};
 use andromeda_os::vga::Color::*;
 use andromeda_os::vga::VGA_WRITER;
 use andromeda_os::{halt, memory, print, println, vga};
@@ -36,10 +36,10 @@ fn main() {
     s.push_str(" It can be expanded.");
     println!("{:?}", s);
 
-    let mut executor = SimpleExecutor::new();
+    let mut executor = Executor::new(100);
     executor.spawn(example_task());
     executor.spawn(keyboard::print_keypresses());
-    executor.run();
+    executor.run()
 }
 
 bootloader::entry_point!(kernel_start);
