@@ -9,7 +9,7 @@ extern crate alloc;
 use core::panic::PanicInfo;
 
 use andromeda_os::memory::BootInfoFrameAllocator;
-use andromeda_os::task::SimpleExecutor;
+use andromeda_os::task::{keyboard, SimpleExecutor};
 use andromeda_os::vga::Color::*;
 use andromeda_os::vga::VGA_WRITER;
 use andromeda_os::{halt, memory, print, println, vga};
@@ -38,6 +38,7 @@ fn main() {
 
     let mut executor = SimpleExecutor::new();
     executor.spawn(example_task());
+    executor.spawn(keyboard::print_keypresses());
     executor.run();
 }
 
